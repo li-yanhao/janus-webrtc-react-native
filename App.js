@@ -31,95 +31,6 @@ import {
 
 import { Janus } from './janus.js';
 
-// const App = () => {
-//   return (
-//     <Fragment>
-//       <StatusBar barStyle="dark-content" />
-//       <SafeAreaView>
-//         <ScrollView
-//           contentInsetAdjustmentBehavior="automatic"
-//           style={styles.scrollView}>
-//           <Header />
-//           {global.HermesInternal == null ? null : (
-//             <View style={styles.engine}>
-//               <Text style={styles.footer}>Engine: Hermes</Text>
-//             </View>
-//           )}
-//           <View style={styles.body}>
-//             <View style={styles.sectionContainer}>
-//               <Text style={styles.sectionTitle}>Step One</Text>
-//               <Text style={styles.sectionDescription}>
-//                 Edit <Text style={styles.highlight}>App.js</Text> to change this
-//                 screen and then come back to see your edits.
-//               </Text>
-//             </View>
-//             <View style={styles.sectionContainer}>
-//               <Text style={styles.sectionTitle}>See Your Changes</Text>
-//               <Text style={styles.sectionDescription}>
-//                 <ReloadInstructions />
-//               </Text>
-//             </View>
-//             <View style={styles.sectionContainer}>
-//               <Text style={styles.sectionTitle}>Debug</Text>
-//               <Text style={styles.sectionDescription}>
-//                 <DebugInstructions />
-//               </Text>
-//             </View>
-//             <View style={styles.sectionContainer}>
-//               <Text style={styles.sectionTitle}>Learn More</Text>
-//               <Text style={styles.sectionDescription}>
-//                 Read the docs to discover what to do next:
-//               </Text>
-//             </View>
-//             <LearnMoreLinks />
-//           </View>
-//         </ScrollView>
-//       </SafeAreaView>
-//     </Fragment>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   scrollView: {
-//     backgroundColor: Colors.lighter,
-//   },
-//   engine: {
-//     position: 'absolute',
-//     right: 0,
-//   },
-//   body: {
-//     backgroundColor: Colors.white,
-//   },
-//   sectionContainer: {
-//     marginTop: 32,
-//     paddingHorizontal: 24,
-//   },
-//   sectionTitle: {
-//     fontSize: 24,
-//     fontWeight: '600',
-//     color: Colors.black,
-//   },
-//   sectionDescription: {
-//     marginTop: 8,
-//     fontSize: 18,
-//     fontWeight: '400',
-//     color: Colors.dark,
-//   },
-//   highlight: {
-//     fontWeight: '700',
-//   },
-//   footer: {
-//     color: Colors.dark,
-//     fontSize: 12,
-//     fontWeight: '600',
-//     padding: 4,
-//     paddingRight: 12,
-//     textAlign: 'right',
-//   },
-// });
-
-// export default App;
-
 import {
   RTCPeerConnection,
   RTCIceCandidate,
@@ -222,22 +133,25 @@ pc.onicecandidate = function (event) {
 var sfutest = null;
 let host = "10.1.7.19"
 let server = "http://" + host + ":8088/janus"
-let myusername = Math.floor(Math.random() * 1000);
-let roomId = 1234
+let backHost = "http://" + host + ":3000/stream"
+let pin = null;
+let myroom = null;
 let myid = null;
-let mystream = null;
 
-Janus.init({debug: "all", callback: function() {
-  if(started)
+
+Janus.init({
+  debug: "all", callback: function () {
+    if (started)
       return;
-  started = true;
-}});
+    started = true;
+  }
+});
 
-export default class Touchables extends Component {
+export default class JanusReactNative extends Component {
 
   constructor(props) {
     super(props);
-    this.state ={ 
+    this.state = {
       info: 'Initializing',
       status: 'init',
       roomID: '',
@@ -275,8 +189,9 @@ export default class Touchables extends Component {
               plugin: "janus.plugin.videoroom",
               success: (pluginHandle) => {
                 sfutest = pluginHandle;
-                let register = { "request": "join", "room": roomId, "ptype": "publisher", "display": myusername.toString() };
-                sfutest.send({ "message": register });
+                this.requestStart().then(this.registerUsername);
+                // let register = { "request": "join", "room": roomId, "ptype": "publisher", "display": myusername.toString() };
+                // sfutest.send({ "message": register });
               },
               error: (error) => {
                 Alert.alert("  -- Error attaching plugin...", error);
@@ -364,16 +279,27 @@ export default class Touchables extends Component {
       })
   }
 
-  publishOwnFeed(useAudio) {
+  async registerUsername() {
+    console.log("register user name")
+    var username = 'yanhao';
+
+    var register = { "request": "join", "room": myroom, "ptype": "publisher", "display": username, "pin": pin, id: myid };
+    myusername = username;
+    sfutest.send({ "message": register });
+    var bitrate = 2000 * 1024;
+    sfutest.send({ "message": { "request": "configure", "bitrate": bitrate } });
+  }
+
+  async publishOwnFeed(useAudio) {
     if (!this.state.publish) {
       this.setState({ publish: true });
-      
+
       sfutest.createOffer(
         {
           media: { audioRecv: false, videoRecv: false, audioSend: useAudio, videoSend: true },
           success: (jsep) => {
             console.log("Create offer : success \n")
-            var publish = { "request": "configure", "audio": useAudio, "video": true, "bitrate": 5000*1024 };
+            var publish = { "request": "configure", "audio": useAudio, "video": true, "bitrate": 5000 * 1024 };
             sfutest.send({ "message": publish, "jsep": jsep });
           },
           error: (error) => {
@@ -392,7 +318,34 @@ export default class Touchables extends Component {
 
   }
 
-  
+  async requestStart() {
+    await fetch(backHost, {
+      cache: "no-cache",
+      credentials: "omit",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify({
+        login: "yanhao",
+        passwd: "1234",
+        roomid: 233,
+        request: 'publish'
+      })
+    }).then(response => {
+      return response.json()
+    }).then(data => {
+      console.log("parse response")
+      console.log(data)
+      if (data.status === "success") {
+        myroom = data.key.room
+        pin = data.key.pin
+        myid = data.key.id
+      }
+    })
+  }
+
 
   _onfetchJson() {
     console.log("try to fetch");
@@ -414,10 +367,7 @@ export default class Touchables extends Component {
       this.setState(previousState => (
         { message: data.message }
       ))
-
-    })
-
-    /*.then(res => {
+    })/*.then(res => {
       console.log("get a response:");
       console.log(res)
       Alert.alert(res.data);
@@ -425,24 +375,23 @@ export default class Touchables extends Component {
   }
 
 
+
+
   render() {
     return (
       <View style={styles.container}>
-       
+
         <TouchableWithoutFeedback
           onPress={this.janusStart}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Start for Janus!!!</Text>
           </View>
         </TouchableWithoutFeedback>
-        { this.state.selfViewSrc && 
-        <RTCView key={this.state.selfViewSrcKey} 
-        streamURL={this.state.selfViewSrc} 
-        style={{ width: 350, height: 600 }}/>}
-        
-        <View style={{ flex: 1, paddingTop: 20 }}>
-          <Text style={styles.baseText}>{this.state.selfViewSrc + " " + this.state.selfViewSrcKey}</Text>
-        </View>
+        {this.state.selfViewSrc &&
+          <RTCView key={this.state.selfViewSrcKey}
+            streamURL={this.state.selfViewSrc}
+            style={{ width: 350, height: 600 }} />}
+
       </View>
 
 
