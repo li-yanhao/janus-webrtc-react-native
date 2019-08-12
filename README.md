@@ -16,7 +16,10 @@
         
             $ npm install
 
-3. Connect your device to your computer. Build the app and install it on your mobile device.
+3. Check the IP address of your computer. Set the parameter of your server host address 
+(in `App.js` => `let host = "10.1.7.19"`). 
+
+4. Connect your device to your computer. Build the app and install it on your mobile device.
 The following code is for an android device.
 
             $ react-native start
