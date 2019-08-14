@@ -8,26 +8,14 @@
 
 import React, { Fragment, Component } from 'react';
 import {
-  Platform, TouchableHighlight, TouchableOpacity, TouchableNativeFeedback, TouchableWithoutFeedback,
-  FlatList, ActivityIndicator,
+  TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback,
   Alert, Button,
-  SafeAreaView,
   StyleSheet,
-  ScrollView,
   View,
   Text,
-  StatusBar,
-  AppRegistry,
-  Image
+
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
 import { Janus } from './janus.js';
 
@@ -137,6 +125,7 @@ let backHost = "http://" + host + ":3000/stream"
 let pin = null;
 let myroom = null;
 let myid = null;
+let janus = null;
 
 
 Janus.init({
@@ -167,10 +156,11 @@ export default class JanusReactNative extends Component {
       speaker: false,
       audioMute: false,
       videoMute: false,
-      visible: false
+      visible: false,
+      buttonText: "Start for Janus !!!"
     };
-    this._onfetchJson = this._onfetchJson.bind(this);
-    this.janusStart.bind(this)
+    this.janusStart.bind(this);
+    this.onPressButton.bind(this);
   }
 
 
@@ -190,7 +180,7 @@ export default class JanusReactNative extends Component {
               success: (pluginHandle) => {
                 sfutest = pluginHandle;
                 this.requestStart().then(this.registerUsername);
-                // let register = { "request": "join", "room": roomId, "ptype": "publisher", "display": myusername.toString() };
+                // let register = { "request": "join", "room": 1234, "ptype": "publisher", "display": "yanhao", "id": 5035925950 };
                 // sfutest.send({ "message": register });
               },
               error: (error) => {
@@ -273,7 +263,7 @@ export default class JanusReactNative extends Component {
           Alert.alert("  Janus Error", error);
         },
         destroyed: () => {
-          Alert.alert("  Success for End Call ");
+          // Alert.alert("  Success for End Call ");
           this.setState({ publish: false });
         }
       })
@@ -284,15 +274,14 @@ export default class JanusReactNative extends Component {
     var username = 'yanhao';
 
     var register = { "request": "join", "room": myroom, "ptype": "publisher", "display": username, "pin": pin, id: myid };
-    myusername = username;
     sfutest.send({ "message": register });
     var bitrate = 2000 * 1024;
     sfutest.send({ "message": { "request": "configure", "bitrate": bitrate } });
   }
 
-  async publishOwnFeed(useAudio) {
+  publishOwnFeed(useAudio) {
     if (!this.state.publish) {
-      this.setState({ publish: true });
+      this.setState({ publish: true, buttonText: "Stop"});
 
       sfutest.createOffer(
         {
@@ -307,6 +296,7 @@ export default class JanusReactNative extends Component {
             if (useAudio) {
               publishOwnFeed(false);
             } else {
+              
             }
           }
         });
@@ -315,7 +305,6 @@ export default class JanusReactNative extends Component {
       // let unpublish = { "request": "unpublish" };
       // sfutest.send({"message": unpublish});
     }
-
   }
 
   async requestStart() {
@@ -330,7 +319,7 @@ export default class JanusReactNative extends Component {
       body: JSON.stringify({
         login: "yanhao",
         passwd: "1234",
-        roomid: 233,
+        roomid: 5555,
         request: 'publish'
       })
     }).then(response => {
@@ -346,35 +335,24 @@ export default class JanusReactNative extends Component {
     })
   }
 
-
-  _onfetchJson() {
-    console.log("try to fetch");
-    fetch("http://" + host + ":3000/", {
-      cache: "no-cache",
-      credentials: "omit",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json"
-      },
-      method: "POST",
-      body: null
-    }).then(response => {
-      return response.json()
-    }).then(data => {
-      console.log(data)
-      let mes = data.message;
-      Alert.alert(mes);
-      this.setState(previousState => (
-        { message: data.message }
-      ))
-    })/*.then(res => {
-      console.log("get a response:");
-      console.log(res)
-      Alert.alert(res.data);
-    })*/
+  unpublishOwnFeed(){
+    if (this.state.publish){
+      this.setState({buttonText: "Start for Janus !!!"});
+      let unpublish = {request: "unpublish"};
+      sfutest.send({message: unpublish});
+      janus.destroy();
+      this.setState({ selfViewSrc: null });
+    } 
   }
 
-
+  onPressButton = () => {
+    if (!this.state.publish){
+      this.janusStart();
+    }
+    else {
+      this.unpublishOwnFeed();
+    }
+  }
 
 
   render() {
@@ -382,9 +360,9 @@ export default class JanusReactNative extends Component {
       <View style={styles.container}>
 
         <TouchableWithoutFeedback
-          onPress={this.janusStart}>
+          onPress={this.onPressButton}>
           <View style={styles.button}>
-            <Text style={styles.buttonText}>Start for Janus!!!</Text>
+            <Text style={styles.buttonText}>{this.state.buttonText}</Text>
           </View>
         </TouchableWithoutFeedback>
         {this.state.selfViewSrc &&

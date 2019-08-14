@@ -1,6 +1,6 @@
 # Janus WebRTC React Native module
 
-## usage
+## Usage
 
 1. Follow the official instructions to install [React Native]:
     

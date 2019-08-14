@@ -40,22 +40,7 @@ Janus.sessions = {};
 
 // Screensharing Chrome Extension ID
 Janus.extensionId = "hapfgfdkleiggjjpfpenajgdnfckjpaj";
-// Janus.isExtensionEnabled = function() {
-//     if(window.navigator.userAgent.match('Chrome')) {
-//         var chromever = parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10);
-//         var maxver = 33;
-//         if(window.navigator.userAgent.match('Linux'))
-//             maxver = 35;    // "known" crash in chrome 34 and 35 on linux
-//         if(chromever >= 26 && chromever <= maxver) {
-//             // Older versions of Chrome don't support this extension-based approach, so lie
-//             return true;
-//         }
-//         return (document.getElementById('janus-extension-installed') !== null);
-//     } else {
-//         // Firefox of others, no need for the extension (but this doesn't mean it will work)
-//         return true;
-//     }
-// };
+
 
 Janus.noop = function () { };
 
@@ -203,41 +188,7 @@ Janus.init = function (options) {
                 }
             }
         }
-        // function addJsList(srcArray) {
-        //     if (!srcArray || !Array.isArray(srcArray) || srcArray.length == 0) {
-        //         options.callback();
-        //     }
-        //     var count = 0;
-        //     addJs(srcArray[count],next);
-
-        //     function next() {
-        //         count++;
-        //         if (count<srcArray.length) {
-        //             addJs(srcArray[count],next);
-        //         }
-        //         else {
-        //             options.callback();
-        //         }
-        //     }
-        // }
-        // function addJs(src,done) {
-        //     if(src === 'adapter.js') {
-        //         if(window.getUserMedia && window.RTCPeerConnection) {
-        //             // Already loaded
-        //             done();
-        //             return;
-        //         }
-        //     }
-        //     var oHead = document.getElementsByTagName('head').item(0);
-        //     var oScript = document.createElement("script");
-        //     oScript.type = "text/javascript";
-        //     oScript.src = src;
-        //     oScript.onload = function() {
-        //         Janus.log("Library " + src + " loaded");
-        //         done();
-        //     }
-        //     oHead.appendChild(oScript);
-        // }
+        
         Janus.initDone = true;
         // addJsList(["adapter.js"]);  // We may need others in the future
     }
@@ -251,15 +202,10 @@ Janus.isWebrtcSupported = function () {
 
 // Janus session object
 export function Janus(gatewayCallbacks) {
-    // function Janus(gatewayCallbacks) {
     if (Janus.initDone === undefined) {
         gatewayCallbacks.error("Library not initialized");
         return {};
     }
-    // if(!Janus.isWebrtcSupported()) {
-    // gatewayCallbacks.error("WebRTC not supported by this browser");
-    // return {};
-    // }
     Janus.log("Library initialized: " + Janus.initDone);
     gatewayCallbacks = gatewayCallbacks || {};
     gatewayCallbacks.success = (typeof gatewayCallbacks.success == "function") ? gatewayCallbacks.success : Janus.noop;
@@ -1524,6 +1470,7 @@ export function Janus(gatewayCallbacks) {
                             .then(function (stream) { gsmCallback(null, stream); })
                             .catch(function (error) { pluginHandle.consentDialog(false); gsmCallback(error); });
                     };
+                    
                     if (window.navigator.userAgent.match('Chrome')) {
                         var chromever = parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10);
                         var maxver = 33;
