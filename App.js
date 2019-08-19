@@ -8,7 +8,7 @@
 
 import React, { Fragment, Component } from 'react';
 import {
-  TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback,
+  TouchableOpacity,
   Alert, Button,
   StyleSheet,
   View,
@@ -358,13 +358,12 @@ export default class JanusReactNative extends Component {
   render() {
     return (
       <View style={styles.container}>
-
-        <TouchableWithoutFeedback
-          onPress={this.onPressButton}>
+        <TouchableOpacity onPress={this.onPressButton} underlayColor="white">
           <View style={styles.button}>
             <Text style={styles.buttonText}>{this.state.buttonText}</Text>
           </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
+
         {this.state.selfViewSrc &&
           <RTCView key={this.state.selfViewSrcKey}
             streamURL={this.state.selfViewSrc}
@@ -393,8 +392,3 @@ const styles = StyleSheet.create({
     color: 'white'
   }
 });
-
-
-
-// skip this line if using Create React Native App
-// AppRegistry.registerComponent('AwesomeProject', () => ButtonBasics);
