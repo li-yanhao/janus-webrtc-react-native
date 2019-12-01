@@ -33,7 +33,7 @@ The following code is for an android device.
             
 [React Native]: https://facebook.github.io/react-native/docs/getting-started
 
-[janus-demo-docker]: https://git.gpac-licensing.com/yanhao/janus-demo-docker
+[janus-demo-docker]: https://github.com/MinesNicaicai/janus-demo-docker
 
 ## Extension
 

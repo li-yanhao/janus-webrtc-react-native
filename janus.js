@@ -1655,12 +1655,6 @@ export function Janus(gatewayCallbacks) {
         Janus.log("Creating offer (iceDone=" + config.iceDone + ")");
         // https://code.google.com/p/webrtc/issues/detail?id=3508
         var mediaConstraints = null;
-        // if(webrtcDetectedBrowser == "firefox" || webrtcDetectedBrowser == "edge") {
-        //     mediaConstraints = {
-        //         'offerToReceiveAudio':isAudioRecvEnabled(media),
-        //         'offerToReceiveVideo':isVideoRecvEnabled(media)
-        //     };
-        // } else {
         mediaConstraints = {
             'mandatory': {
                 'OfferToReceiveAudio': isAudioRecvEnabled(media),
